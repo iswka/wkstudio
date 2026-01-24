@@ -1,0 +1,17 @@
+Name: user-api
+Host: 0.0.0.0
+Port: 8888
+
+# JWT 配置
+Auth:
+  AccessSecret: your-secret-key-please-change-in-production-min-32-chars
+  AccessExpire: 86400  # 24小时 (单位: 秒)
+
+# 数据库配置
+DataSource: root:password@tcp(127.0.0.1:3306)/user_auth?charset=utf8mb4&parseTime=True&loc=Local
+
+# 日志配置
+Log:
+  ServiceName: user-api
+  Mode: console
+  Level: info

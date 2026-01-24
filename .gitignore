@@ -1,0 +1,40 @@
+# .DS_Store
+*.log
+*.tmp
+*.swp
+*~
+
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Go
+vendor/
+go.sum
+
+# Test
+*.test
+coverage.out
+
+# Env
+.env
+.env.local
+
+# Build
+build/
+dist/
+bin/
+
+# Logs
+logs/
+*.log
+
+# OS
+Thumbs.db

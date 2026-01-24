@@ -1,0 +1,92 @@
+syntax = "v1"
+
+info(
+    title: "用户认证服务"
+    desc: "用户注册、登录、鉴权"
+    author: "wkstudio"
+    version: "v1.0"
+)
+
+// 注册请求
+type RegisterReq {
+    Username string `json:"username" validate:"required,min=3,max=20"`
+    Password string `json:"password" validate:"required,min=6,max=20"`
+    Email    string `json:"email" validate:"required,email"`
+    Mobile   string `json:"mobile,optional"`
+}
+
+// 注册响应
+type RegisterResp {
+    ID       int64  `json:"id"`
+    Username string `json:"username"`
+    Message  string `json:"message"`
+}
+
+// 登录请求
+type LoginReq {
+    Username string `json:"username" validate:"required"`
+    Password string `json:"password" validate:"required"`
+}
+
+// 登录响应
+type LoginResp {
+    ID          int64  `json:"id"`
+    Username    string `json:"username"`
+    Email       string `json:"email"`
+    AccessToken string `json:"access_token"`
+    ExpireTime  int64  `json:"expire_time"`
+}
+
+// 用户信息请求
+type UserInfoReq {
+    UserID int64 `json:"user_id,optional"`
+}
+
+// 用户信息响应
+type UserInfoResp {
+    ID       int64  `json:"id"`
+    Username string `json:"username"`
+    Email    string `json:"email"`
+    Mobile   string `json:"mobile"`
+}
+
+// 修改密码请求
+type ChangePasswordReq {
+    OldPassword string `json:"old_password" validate:"required"`
+    NewPassword string `json:"new_password" validate:"required,min=6,max=20"`
+}
+
+// 通用响应
+type CommonResp {
+    Message string `json:"message"`
+}
+
+// 公开接口 - 不需要认证
+@server(
+    group: auth
+)
+service user-api {
+    @doc "用户注册"
+    @handler register
+    post /api/auth/register (RegisterReq) returns (RegisterResp)
+    
+    @doc "用户登录"
+    @handler login
+    post /api/auth/login (LoginReq) returns (LoginResp)
+}
+
+// 受保护接口 - 需要JWT认证
+@server(
+    jwt: Auth
+    group: user
+    middleware: AuthMiddleware
+)
+service user-api {
+    @doc "获取用户信息"
+    @handler getUserInfo
+    get /api/user/info (UserInfoReq) returns (UserInfoResp)
+    
+    @doc "修改密码"
+    @handler changePassword
+    post /api/user/change-password (ChangePasswordReq) returns (CommonResp)
+}
