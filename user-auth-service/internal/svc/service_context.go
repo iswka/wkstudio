@@ -7,7 +7,7 @@ import (
 	"user-auth-service/internal/model"
 
 	"github.com/zeromicro/go-zero/rest"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -19,7 +19,7 @@ type ServiceContext struct {
 
 func NewServiceContext(c config.Config) *ServiceContext {
 	// 初始化数据库连接
-	db, err := gorm.Open(mysql.Open(c.DataSource), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(c.DataSource), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("无法连接数据库: %v", err)
 	}

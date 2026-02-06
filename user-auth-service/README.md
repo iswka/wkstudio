@@ -16,7 +16,7 @@
 
 - Go 1.21+
 - go-zero v1.6+
-- MySQL 8.0+
+- PostgreSQL 14+
 - JWT
 - GORM
 
@@ -34,12 +34,12 @@ go mod tidy
 
 ### 2. 配置数据库
 
-创建数据库：
-```sql
-CREATE DATABASE user_auth DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+使用 Docker 启动 PostgreSQL（推荐）：
+```bash
+docker compose up -d
 ```
-
-修改 `etc/user-api.yaml` 中的数据库配置。
+或本地安装 PostgreSQL 并创建数据库 `user_auth`。  
+修改 `etc/user-service.yaml` 中的数据库连接配置。
 
 ### 3. 生成代码（可选）
 
@@ -55,7 +55,7 @@ goctl api go -api user.api -dir . -style go_zero
 make run
 
 # 方式2：直接运行
-go run main.go -f etc/user-api.yaml
+go run main.go -f etc/user-service.yaml
 ```
 
 服务将在 `http://localhost:8888` 启动。
@@ -137,7 +137,7 @@ Content-Type: application/json
 ```
 .
 ├── etc/                    # 配置文件
-│   └── user-api.yaml
+│   └── user-service.yaml
 ├── internal/
 │   ├── config/            # 配置定义
 │   ├── handler/           # HTTP 处理器
@@ -161,9 +161,9 @@ Content-Type: application/json
 
 ## 配置说明
 
-`etc/user-api.yaml`:
+`etc/user-service.yaml`:
 ```yaml
-Name: user-api
+Name: user-service
 Host: 0.0.0.0
 Port: 8888
 
@@ -172,8 +172,8 @@ Auth:
   AccessSecret: your-secret-key-change-in-production
   AccessExpire: 86400  # 24小时
 
-# 数据库配置
-DataSource: root:password@tcp(127.0.0.1:3306)/user_auth?charset=utf8mb4&parseTime=True&loc=Local
+# 数据库配置（PostgreSQL）
+DataSource: host=127.0.0.1 user=userapi password=password dbname=user_auth port=5432 sslmode=disable TimeZone=Asia/Shanghai
 ```
 
 ## 安全建议

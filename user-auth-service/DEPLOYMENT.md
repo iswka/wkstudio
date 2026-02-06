@@ -9,13 +9,13 @@
 - 2GB+ RAM
 - 20GB+ 磁盘空间
 - Go 1.21+ (如果需要编译)
-- MySQL 8.0+
+- PostgreSQL 14+
 
 ### 2. 安全配置
 
 #### 修改 JWT Secret
 
-编辑 `etc/user-api.yaml`：
+编辑 `etc/user-service.yaml`：
 
 ```yaml
 Auth:
@@ -43,20 +43,19 @@ sudo ufw enable
 #### 创建专用数据库用户
 
 ```sql
--- 创建用户
-CREATE USER 'userapi'@'localhost' IDENTIFIED BY 'strong_password_here';
+-- 在 PostgreSQL 中创建用户（若尚未创建）
+CREATE USER userapi WITH PASSWORD 'strong_password_here';
 
--- 授予权限
-GRANT SELECT, INSERT, UPDATE, DELETE ON user_auth.* TO 'userapi'@'localhost';
-
--- 刷新权限
-FLUSH PRIVILEGES;
+-- 授予数据库权限
+GRANT ALL PRIVILEGES ON DATABASE user_auth TO userapi;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO userapi;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO userapi;
 ```
 
 #### 更新配置
 
 ```yaml
-DataSource: userapi:strong_password_here@tcp(127.0.0.1:3306)/user_auth?charset=utf8mb4&parseTime=True&loc=Local
+DataSource: host=127.0.0.1 user=userapi password=strong_password_here dbname=user_auth port=5432 sslmode=disable TimeZone=Asia/Shanghai
 ```
 
 ### 4. 编译和部署
@@ -65,30 +64,30 @@ DataSource: userapi:strong_password_here@tcp(127.0.0.1:3306)/user_auth?charset=u
 
 ```bash
 # 1. 编译
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o user-api main.go
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o user-service main.go
 
 # 2. 创建部署目录
-sudo mkdir -p /opt/user-api
-sudo cp user-api /opt/user-api/
-sudo cp -r etc /opt/user-api/
+sudo mkdir -p /opt/user-service
+sudo cp user-service /opt/user-service/
+sudo cp -r etc /opt/user-service/
 
 # 3. 设置权限
-sudo chmod +x /opt/user-api/user-api
+sudo chmod +x /opt/user-service/user-service
 ```
 
 #### 方式 B：使用 Docker
 
 ```bash
 # 1. 构建镜像
-docker build -t user-api:v1.0 .
+docker build -t user-service:v1.0 .
 
 # 2. 运行容器
 docker run -d \
-  --name user-api \
+  --name user-service \
   -p 8888:8888 \
   -v /path/to/etc:/root/etc \
   --restart unless-stopped \
-  user-api:v1.0
+  user-service:v1.0
 ```
 
 #### 方式 C：使用 Docker Compose
@@ -100,19 +99,19 @@ docker-compose up -d
 
 ### 5. 使用 Systemd 管理服务
 
-创建 systemd 服务文件 `/etc/systemd/system/user-api.service`：
+创建 systemd 服务文件 `/etc/systemd/system/user-service.service`：
 
 ```ini
 [Unit]
 Description=User Authentication API Service
-After=network.target mysql.service
+After=network.target postgresql.service
 
 [Service]
 Type=simple
 User=www-data
 Group=www-data
-WorkingDirectory=/opt/user-api
-ExecStart=/opt/user-api/user-api -f /opt/user-api/etc/user-api.yaml
+WorkingDirectory=/opt/user-service
+ExecStart=/opt/user-service/user-service -f /opt/user-service/etc/user-service.yaml
 Restart=on-failure
 RestartSec=5s
 
@@ -121,7 +120,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/opt/user-api
+ReadWritePaths=/opt/user-service
 
 [Install]
 WantedBy=multi-user.target
@@ -131,9 +130,9 @@ WantedBy=multi-user.target
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable user-api
-sudo systemctl start user-api
-sudo systemctl status user-api
+sudo systemctl enable user-service
+sudo systemctl start user-service
+sudo systemctl status user-service
 ```
 
 ### 6. Nginx 反向代理（推荐）
@@ -145,7 +144,7 @@ sudo apt update
 sudo apt install nginx
 ```
 
-配置 `/etc/nginx/sites-available/user-api`：
+配置 `/etc/nginx/sites-available/user-service`：
 
 ```nginx
 upstream user_api {
@@ -171,8 +170,8 @@ server {
     ssl_ciphers HIGH:!aNULL:!MD5;
 
     # 日志
-    access_log /var/log/nginx/user-api-access.log;
-    error_log /var/log/nginx/user-api-error.log;
+    access_log /var/log/nginx/user-service-access.log;
+    error_log /var/log/nginx/user-service-error.log;
 
     # 安全头
     add_header X-Frame-Options "SAMEORIGIN" always;
@@ -201,7 +200,7 @@ server {
 启用站点：
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/user-api /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/user-service /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -223,13 +222,13 @@ sudo certbot renew --dry-run
 
 #### 配置日志文件
 
-修改 `etc/user-api.yaml`：
+修改 `etc/user-service.yaml`：
 
 ```yaml
 Log:
-  ServiceName: user-api
+  ServiceName: user-service
   Mode: file
-  Path: /var/log/user-api
+  Path: /var/log/user-service
   Level: info
   Compress: true
   KeepDays: 7
@@ -237,10 +236,10 @@ Log:
 
 #### 日志轮转
 
-创建 `/etc/logrotate.d/user-api`：
+创建 `/etc/logrotate.d/user-service`：
 
 ```
-/var/log/user-api/*.log {
+/var/log/user-service/*.log {
     daily
     rotate 7
     compress
@@ -249,7 +248,7 @@ Log:
     create 0640 www-data www-data
     sharedscripts
     postrotate
-        systemctl reload user-api > /dev/null 2>&1 || true
+        systemctl reload user-service > /dev/null 2>&1 || true
     endscript
 }
 ```
@@ -284,13 +283,13 @@ Prometheus:
 ```bash
 #!/bin/bash
 
-BACKUP_DIR="/backup/mysql"
+BACKUP_DIR="/backup/postgres"
 DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_FILE="$BACKUP_DIR/user_auth_$DATE.sql.gz"
 
 mkdir -p $BACKUP_DIR
 
-mysqldump -u userapi -p'password' user_auth | gzip > $BACKUP_FILE
+PGPASSWORD='password' pg_dump -U userapi -h 127.0.0.1 user_auth | gzip > $BACKUP_FILE
 
 # 保留最近7天的备份
 find $BACKUP_DIR -name "user_auth_*.sql.gz" -mtime +7 -delete
@@ -315,8 +314,8 @@ CREATE INDEX idx_username ON users(username);
 CREATE INDEX idx_email ON users(email);
 CREATE INDEX idx_created_at ON users(created_at);
 
--- 优化配置（my.cnf）
-innodb_buffer_pool_size = 1G
+-- 优化配置（postgresql.conf）
+shared_buffers = 256MB
 max_connections = 200
 ```
 
@@ -352,7 +351,7 @@ sqlDB.SetConnMaxLifetime(time.Hour)
 
 ```bash
 # 检查服务状态
-sudo systemctl status user-api
+sudo systemctl status user-service
 
 # 检查端口监听
 sudo netstat -tlnp | grep 8888
@@ -369,27 +368,27 @@ curl https://api.yourdomain.com/api/auth/login \
 
 ```bash
 # 查看日志
-sudo journalctl -u user-api -f
+sudo journalctl -u user-service -f
 
 # 检查配置文件
-/opt/user-api/user-api -f /opt/user-api/etc/user-api.yaml
+/opt/user-service/user-service -f /opt/user-service/etc/user-service.yaml
 ```
 
 ### 数据库连接失败
 
 ```bash
 # 测试数据库连接
-mysql -u userapi -p -h 127.0.0.1 user_auth
+psql -U userapi -h 127.0.0.1 -d user_auth
 
-# 检查 MySQL 状态
-sudo systemctl status mysql
+# 检查 PostgreSQL 状态
+sudo systemctl status postgresql
 ```
 
 ### 高 CPU/内存使用
 
 ```bash
 # 查看进程资源使用
-top -p $(pgrep user-api)
+top -p $(pgrep user-service)
 
 # 使用 pprof 分析
 go tool pprof http://localhost:8888/debug/pprof/profile
@@ -399,13 +398,13 @@ go tool pprof http://localhost:8888/debug/pprof/profile
 
 ```bash
 # 停止服务
-sudo systemctl stop user-api
+sudo systemctl stop user-service
 
 # 恢复旧版本
-sudo cp /backup/user-api-old /opt/user-api/user-api
+sudo cp /backup/user-service-old /opt/user-service/user-service
 
 # 重启服务
-sudo systemctl start user-api
+sudo systemctl start user-service
 ```
 
 ## 联系支持

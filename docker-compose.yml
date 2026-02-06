@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: wkstudio-postgres
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: n0Lfj5rj0QdTUNFKeqoG
+      POSTGRES_DB: wkstudio
+      TZ: Asia/Shanghai
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres_data:

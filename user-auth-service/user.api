@@ -65,7 +65,7 @@ type CommonResp {
 @server(
     group: auth
 )
-service user-api {
+service user-service {
     @doc "用户注册"
     @handler register
     post /api/auth/register (RegisterReq) returns (RegisterResp)
@@ -81,7 +81,7 @@ service user-api {
     group: user
     middleware: AuthMiddleware
 )
-service user-api {
+service user-service {
     @doc "获取用户信息"
     @handler getUserInfo
     get /api/user/info (UserInfoReq) returns (UserInfoResp)

@@ -43,47 +43,43 @@ docker info | grep -A 5 "Registry Mirrors"
 使用国内镜像源手动拉取：
 
 ```bash
-# 使用阿里云镜像
-docker pull registry.cn-hangzhou.aliyuncs.com/library/mysql:8.0
-docker tag registry.cn-hangzhou.aliyuncs.com/library/mysql:8.0 mysql:8.0
+# 使用阿里云等镜像拉取 PostgreSQL（若需要）
+docker pull postgres:16-alpine
 
 # 然后再运行 docker compose
 docker compose up -d
 ```
 
-### 方案 3：使用本地 MySQL（最简单）
+### 方案 3：使用本地 PostgreSQL（最简单）
 
-如果 Docker 镜像拉取一直有问题，可以直接使用本地 MySQL：
+如果 Docker 镜像拉取一直有问题，可以直接使用本地 PostgreSQL：
 
-#### 安装 MySQL（如果还没有）：
+#### 安装 PostgreSQL（如果还没有）：
 
 ```bash
 # macOS 使用 Homebrew
-brew install mysql
+brew install postgresql@16
 
-# 启动 MySQL
-brew services start mysql
+# 启动 PostgreSQL
+brew services start postgresql@16
 ```
 
 #### 初始化数据库：
 
 ```bash
-# 登录 MySQL
-mysql -u root -p
+# 创建数据库
+createdb user_auth
 
 # 执行初始化脚本
-source sql/init.sql
-
-# 或者直接导入
-mysql -u root -p < sql/init.sql
+psql -U $USER -d user_auth -f sql/init.sql
 ```
 
 #### 修改配置文件：
 
-编辑 `etc/user-api.yaml`，确保数据库连接正确：
+编辑 `etc/user-service.yaml`，确保数据库连接正确：
 
 ```yaml
-DataSource: root:password@tcp(127.0.0.1:3306)/user_auth?charset=utf8mb4&parseTime=True&loc=Local
+DataSource: host=127.0.0.1 user=你的用户名 password= dbname=user_auth port=5432 sslmode=disable TimeZone=Asia/Shanghai
 ```
 
 #### 直接运行服务：
@@ -93,17 +89,17 @@ DataSource: root:password@tcp(127.0.0.1:3306)/user_auth?charset=utf8mb4&parseTim
 make run
 
 # 或者
-go run main.go -f etc/user-api.yaml
+go run main.go -f etc/user-service.yaml
 ```
 
-### 方案 4：使用 docker-compose 仅运行 MySQL
+### 方案 4：使用 docker-compose 仅运行 PostgreSQL
 
-如果只是 MySQL 拉取失败，可以先只启动 MySQL：
+如果只是 PostgreSQL 拉取失败，可以先只启动 PostgreSQL：
 
 ```bash
-# 修改 docker-compose.yml，临时注释掉 user-api 服务
+# 修改 docker-compose.yml，临时注释掉 user-service 服务
 # 或者使用：
-docker compose up -d mysql
+docker compose up -d postgres
 
 # 然后本地运行 API 服务
 make run
@@ -113,7 +109,7 @@ make run
 
 **对于开发环境**：
 - 推荐使用方案 1（配置镜像加速器），一次配置，永久有效
-- 或使用方案 3（本地 MySQL），更简单直接
+- 或使用方案 3（本地 PostgreSQL），更简单直接
 
 **对于生产环境**：
 - 使用私有镜像仓库
@@ -172,9 +168,9 @@ curl http://localhost:8888/api/auth/login
 
 1. **检查网络连接**：确保可以访问互联网
 2. **重启 Docker Desktop**：完全退出后重新启动
-3. **使用本地 MySQL**：这是最可靠的方案（方案 3）
+3. **使用本地 PostgreSQL**：这是最可靠的方案（方案 3）
 4. **检查防火墙/代理**：某些公司网络可能阻止 Docker Hub 访问
 
 ---
 
-**快速解决**：如果急着使用，直接选择**方案 3**（使用本地 MySQL），最快最稳定！
+**快速解决**：如果急着使用，直接选择**方案 3**（使用本地 PostgreSQL），最快最稳定！

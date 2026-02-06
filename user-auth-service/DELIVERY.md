@@ -3,7 +3,7 @@
 ## 项目信息
 
 **项目名称**: 用户登录鉴权服务  
-**技术栈**: go-zero + MySQL + JWT  
+**技术栈**: go-zero + PostgreSQL + JWT  
 **交付日期**: 2026-01-24  
 **版本**: v1.0.0  
 
@@ -117,10 +117,10 @@ cd /Users/wk/Documents/wkstudio
 make install
 
 # 3. 配置数据库
-# 编辑 etc/user-api.yaml 修改数据库配置
+# 编辑 etc/user-service.yaml 修改数据库配置
 
-# 4. 初始化数据库
-mysql -u root -p < sql/init.sql
+# 4. 初始化数据库（或使用 docker compose up -d 自动初始化）
+psql -U userapi -d user_auth -f sql/init.sql
 
 # 5. 运行服务
 make run
@@ -132,11 +132,11 @@ make test
 ### Docker 方式（推荐）
 
 ```bash
-# 一键启动所有服务（包括 MySQL）
+# 一键启动所有服务（包括 PostgreSQL）
 docker-compose up -d
 
 # 查看日志
-docker-compose logs -f user-api
+docker-compose logs -f user-service
 
 # 停止服务
 docker-compose down
@@ -203,14 +203,14 @@ CPU 占用: < 5% (空载)
 ```
 github.com/zeromicro/go-zero v1.6.0
 gorm.io/gorm v1.25.5
-gorm.io/driver/mysql v1.5.2
+gorm.io/driver/postgres v1.5.7
 github.com/golang-jwt/jwt/v4 v4.5.0
 golang.org/x/crypto v0.18.0
 ```
 
 ### 系统要求
 - Go 1.21+
-- MySQL 8.0+
+- PostgreSQL 14+
 - (可选) Docker & Docker Compose
 
 ## 配置说明
@@ -219,7 +219,7 @@ golang.org/x/crypto v0.18.0
 
 ```yaml
 # 服务配置
-Name: user-api
+Name: user-service
 Host: 0.0.0.0
 Port: 8888
 
@@ -263,7 +263,7 @@ DataSource: "root:password@tcp(127.0.0.1:3306)/user_auth?charset=utf8mb4&parseTi
 
 **问题 1**: 数据库连接失败
 ```bash
-解决方案: 检查 MySQL 服务状态和配置
+解决方案: 检查 PostgreSQL 服务状态和配置
 ```
 
 **问题 2**: Token 验证失败

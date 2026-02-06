@@ -1,0 +1,17 @@
+Name: wkstudio-user-service
+Host: 0.0.0.0
+Port: 8888
+
+# JWT 配置
+Auth:
+  AccessSecret: zr19Pz4JabsGLLz4LTnGPjcPA27BVgRX
+  AccessExpire: 86400  # 24小时 (单位: 秒)
+
+# 数据库配置
+DataSource: host=127.0.0.1 user=root password=n0Lfj5rj0QdTUNFKeqoG dbname=wkstudio port=5433 sslmode=disable TimeZone=Asia/Shanghai
+
+# 日志配置
+Log:
+  ServiceName: wkstudio-user-service
+  Mode: console
+  Level: info

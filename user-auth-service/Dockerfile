@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # 编译
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o user-api .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o user-service .
 
 # 运行阶段
 FROM alpine:latest
@@ -24,7 +24,7 @@ RUN apk --no-cache add ca-certificates tzdata
 WORKDIR /root/
 
 # 从构建阶段复制可执行文件
-COPY --from=builder /app/user-api .
+COPY --from=builder /app/user-service .
 COPY --from=builder /app/etc ./etc
 
 # 设置时区
@@ -32,4 +32,4 @@ ENV TZ=Asia/Shanghai
 
 EXPOSE 8888
 
-CMD ["./user-api", "-f", "etc/user-api.yaml"]
+CMD ["./user-service", "-f", "etc/user-service.yaml"]

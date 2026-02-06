@@ -24,7 +24,7 @@ wkstudio/                                    # 工作室根目录
     ├── docker-compose.yml                  # 容器编排
     │
     ├── etc/                                # 配置文件
-    │   └── user-api.yaml                  # 服务配置
+    │   └── user-service.yaml                  # 服务配置
     │
     ├── internal/                           # 内部代码
     │   ├── config/                        # 配置定义

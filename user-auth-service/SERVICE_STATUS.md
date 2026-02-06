@@ -2,12 +2,12 @@
 
 ## 当前运行状态
 
-### MySQL 数据库
+### PostgreSQL 数据库
 - **状态**: ✅ 运行中（Docker 容器）
-- **端口**: 3306
-- **容器名**: user-auth-mysql
+- **端口**: 5432
+- **容器名**: user-auth-postgres
 - **数据库**: user_auth
-- **用户名**: root
+- **用户名**: userapi
 - **密码**: password
 
 ### API 服务
@@ -60,11 +60,11 @@ curl -X GET http://localhost:8888/api/user/info \
 
 ### 查看服务状态
 ```bash
-# 查看 MySQL 容器
-docker ps | grep user-auth-mysql
+# 查看 PostgreSQL 容器
+docker ps | grep user-auth-postgres
 
-# 查看 MySQL 日志
-docker logs user-auth-mysql
+# 查看 PostgreSQL 日志
+docker logs user-auth-postgres
 
 # 查看 API 服务进程
 ps aux | grep "main.go"
@@ -78,13 +78,13 @@ pkill -f "go run main.go"
 # 停止 MySQL 容器
 docker compose down
 
-# 或只停止 MySQL
-docker stop user-auth-mysql
+# 或只停止 PostgreSQL
+docker stop user-auth-postgres
 ```
 
 ### 重启服务
 ```bash
-# 重启 MySQL
+# 重启 PostgreSQL
 docker compose restart
 
 # 重启 API 服务
@@ -94,8 +94,8 @@ make run
 
 ### 查看数据库
 ```bash
-# 进入 MySQL 容器
-docker exec -it user-auth-mysql mysql -uroot -ppassword user_auth
+# 进入 PostgreSQL 容器
+docker exec -it user-auth-postgres psql -U userapi -d user_auth
 
 # 查看用户表
 SELECT * FROM users;
@@ -107,17 +107,17 @@ exit
 ## 配置文件
 
 ### docker-compose.yml
-- 只包含 MySQL 服务
+- 只包含 PostgreSQL 服务
 - 自动初始化数据库和表
 
-### etc/user-api.yaml
-- 数据库连接: localhost:3306
+### etc/user-service.yaml
+- 数据库连接: localhost:5432
 - JWT 配置: 24小时过期
 - 服务端口: 8888
 
 ## 优势
 
-✅ **MySQL 容器化** - 隔离环境，易于管理  
+✅ **PostgreSQL 容器化** - 隔离环境，易于管理  
 ✅ **API 本地运行** - 开发调试方便，热重载快  
 ✅ **不依赖网络** - 避免 Docker Hub 拉取问题  
 ✅ **性能更好** - 本地运行没有容器开销  
@@ -125,7 +125,7 @@ exit
 ## 下次启动
 
 ```bash
-# 1. 启动 MySQL（如果未运行）
+# 1. 启动 PostgreSQL（如果未运行）
 cd /Users/wk/Documents/wkstudio/user-auth-service
 docker compose up -d
 

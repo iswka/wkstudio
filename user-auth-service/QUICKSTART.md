@@ -5,7 +5,7 @@
 ## 前置要求
 
 - Go 1.21 或更高版本
-- MySQL 8.0 或更高版本
+- PostgreSQL 14 或更高版本
 - (可选) Docker 和 Docker Compose
 
 **注意**：本服务位于 `user-auth-service` 目录下，请先进入该目录：
@@ -17,29 +17,26 @@ cd user-auth-service
 
 ### 1. 准备数据库
 
-启动 MySQL 并创建数据库：
+使用 Docker 启动 PostgreSQL（推荐）：
 
 ```bash
-mysql -u root -p
+docker compose up -d
 ```
 
-```sql
-CREATE DATABASE user_auth DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-或者直接执行 SQL 文件：
+或本地安装 PostgreSQL 后创建数据库并执行初始化脚本：
 
 ```bash
-mysql -u root -p < sql/init.sql
+psql -U postgres -c "CREATE DATABASE user_auth;"
+psql -U postgres -d user_auth -f sql/init.sql
 ```
 
 ### 2. 修改配置
 
-编辑 `etc/user-api.yaml`，修改数据库连接信息：
+编辑 `etc/user-service.yaml`，修改数据库连接信息：
 
 ```yaml
-# 数据库配置
-DataSource: root:你的密码@tcp(127.0.0.1:3306)/user_auth?charset=utf8mb4&parseTime=True&loc=Local
+# 数据库配置（PostgreSQL）
+DataSource: host=127.0.0.1 user=userapi password=你的密码 dbname=user_auth port=5432 sslmode=disable TimeZone=Asia/Shanghai
 ```
 
 ### 3. 安装依赖
@@ -56,7 +53,7 @@ go mod tidy
 ```bash
 make run
 # 或者
-go run main.go -f etc/user-api.yaml
+go run main.go -f etc/user-service.yaml
 ```
 
 服务将在 `http://localhost:8888` 启动。
@@ -77,12 +74,12 @@ make test
 docker-compose up -d
 ```
 
-这将自动启动 MySQL 和 API 服务。
+这将自动启动 PostgreSQL 和 API 服务（若 compose 中包含 API）。
 
 ### 2. 查看日志
 
 ```bash
-docker-compose logs -f user-api
+docker-compose logs -f user-service
 ```
 
 ### 3. 停止服务
@@ -187,8 +184,8 @@ curl -X POST http://localhost:8888/api/user/change-password \
 **错误**：`无法连接数据库`
 
 **解决方案**：
-- 检查 MySQL 是否已启动
-- 确认 `etc/user-api.yaml` 中的数据库配置正确
+- 检查 PostgreSQL 是否已启动
+- 确认 `etc/user-service.yaml` 中的数据库配置正确
 - 确保数据库 `user_auth` 已创建
 
 ### 2. Token 验证失败
@@ -205,7 +202,7 @@ curl -X POST http://localhost:8888/api/user/change-password \
 **错误**：`bind: address already in use`
 
 **解决方案**：
-- 修改 `etc/user-api.yaml` 中的端口号
+- 修改 `etc/user-service.yaml` 中的端口号
 - 或者关闭占用 8888 端口的程序
 
 ```bash
@@ -237,7 +234,7 @@ make clean
 
 ## 生产环境部署建议
 
-1. **修改密钥**：在 `etc/user-api.yaml` 中修改 `Auth.AccessSecret` 为强密码
+1. **修改密钥**：在 `etc/user-service.yaml` 中修改 `Auth.AccessSecret` 为强密码
 2. **使用 HTTPS**：配置反向代理（如 Nginx）启用 HTTPS
 3. **环境变量**：敏感信息使用环境变量管理
 4. **日志配置**：修改 `Log.Mode` 为 `file` 并指定日志路径

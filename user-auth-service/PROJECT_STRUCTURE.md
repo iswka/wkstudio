@@ -7,7 +7,7 @@ user-auth-service/
 ├── user.api                     # API 定义文件（go-zero DSL）
 │
 ├── etc/                         # 配置文件目录
-│   └── user-api.yaml           # 服务配置文件
+│   └── user-service.yaml           # 服务配置文件
 │
 ├── internal/                    # 内部代码（不对外暴露）
 │   ├── config/                 # 配置相关
@@ -78,7 +78,7 @@ user-auth-service/
 ### etc/ - 配置目录
 
 存放所有配置文件，支持多环境配置：
-- `user-api.yaml`: 主配置文件（服务、数据库、JWT等）
+- `user-service.yaml`: 主配置文件（服务、数据库、JWT等）
 
 ### internal/ - 内部代码
 
@@ -183,7 +183,7 @@ Logic (internal/logic/)
     ↓ 执行业务逻辑
 Model (internal/model/)
     ↓ 数据库操作
-Database (MySQL)
+Database (PostgreSQL)
     ↓
 返回数据
     ↓

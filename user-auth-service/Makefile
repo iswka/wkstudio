@@ -24,13 +24,13 @@ init:
 # 运行服务
 run:
 	@echo "启动服务..."
-	go run main.go -f etc/user-api.yaml
+	go run main.go -f etc/user-service.yaml
 
 # 编译
 build:
 	@echo "编译程序..."
-	go build -o user-api main.go
-	@echo "编译完成！可执行文件: user-api"
+	go build -o user-service main.go
+	@echo "编译完成！可执行文件: user-service"
 
 # 运行测试
 test:
@@ -41,6 +41,6 @@ test:
 # 清理
 clean:
 	@echo "清理构建文件..."
-	rm -f user-api
+	rm -f user-service
 	go clean
 	@echo "清理完成！"
