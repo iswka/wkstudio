@@ -8,19 +8,19 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// HashPassword 对密码进行哈希加密
+// HashPassword hashes a password using bcrypt
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
 }
 
-// CheckPasswordHash 验证密码
+// CheckPasswordHash verifies a password against a hash
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
 
-// GenerateJwtToken 生成JWT Token
+// GenerateJwtToken generates a JWT token
 func GenerateJwtToken(secretKey string, iat, seconds, userID int64) (string, error) {
 	claims := make(jwt.MapClaims)
 	claims["exp"] = iat + seconds
@@ -33,7 +33,7 @@ func GenerateJwtToken(secretKey string, iat, seconds, userID int64) (string, err
 	return token.SignedString([]byte(secretKey))
 }
 
-// ParseJwtToken 解析JWT Token
+// ParseJwtToken parses a JWT token
 func ParseJwtToken(tokenString, secretKey string) (int64, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -55,7 +55,7 @@ func ParseJwtToken(tokenString, secretKey string) (int64, error) {
 	return 0, fmt.Errorf("invalid token")
 }
 
-// GetCurrentTimestamp 获取当前时间戳
+// GetCurrentTimestamp returns the current timestamp
 func GetCurrentTimestamp() int64 {
 	return time.Now().Unix()
 }

@@ -26,10 +26,10 @@ func NewGetUserInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetUs
 }
 
 func (l *GetUserInfoLogic) GetUserInfo(req *types.UserInfoReq) (resp *types.UserInfoResp, err error) {
-	// 从context中获取用户ID（由JWT中间件自动注入）
+	// Get user ID from context (injected by JWT middleware)
 	userIDValue := l.ctx.Value("user_id")
 	if userIDValue == nil {
-		return nil, errors.New("未授权")
+		return nil, errors.New("unauthorized")
 	}
 
 	var userID int64
@@ -41,17 +41,17 @@ func (l *GetUserInfoLogic) GetUserInfo(req *types.UserInfoReq) (resp *types.User
 	case int64:
 		userID = v
 	default:
-		return nil, errors.New("无效的用户ID")
+		return nil, errors.New("invalid user ID")
 	}
 
-	// 查询用户信息
+	// Query user information
 	user, err := l.svcCtx.UserModel.FindByID(userID)
 	if err != nil {
 		if errors.Is(err, model.ErrUserNotFound) {
-			return nil, errors.New("用户不存在")
+			return nil, errors.New("user not found")
 		}
-		logx.Errorf("查询用户失败: %v", err)
-		return nil, errors.New("获取用户信息失败")
+		logx.Errorf("Failed to find user: %v", err)
+		return nil, errors.New("failed to get user information")
 	}
 
 	return &types.UserInfoResp{

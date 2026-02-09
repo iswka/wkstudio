@@ -26,34 +26,34 @@ func NewRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Register
 }
 
 func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterResp, err error) {
-	// 1. 检查用户名是否已存在
+	// 1. Check if username already exists
 	exists, err := l.svcCtx.UserModel.CheckUsernameExists(req.Username)
 	if err != nil {
-		logx.Errorf("检查用户名失败: %v", err)
-		return nil, errors.New("注册失败，请稍后重试")
+		logx.Errorf("Failed to check username: %v", err)
+		return nil, errors.New("registration failed, please try again later")
 	}
 	if exists {
-		return nil, errors.New("用户名已存在")
+		return nil, errors.New("username already exists")
 	}
 
-	// 2. 检查邮箱是否已存在
+	// 2. Check if email already exists
 	exists, err = l.svcCtx.UserModel.CheckEmailExists(req.Email)
 	if err != nil {
-		logx.Errorf("检查邮箱失败: %v", err)
-		return nil, errors.New("注册失败，请稍后重试")
+		logx.Errorf("Failed to check email: %v", err)
+		return nil, errors.New("registration failed, please try again later")
 	}
 	if exists {
-		return nil, errors.New("邮箱已被使用")
+		return nil, errors.New("email already in use")
 	}
 
-	// 3. 密码加密
+	// 3. Hash password
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
-		logx.Errorf("密码加密失败: %v", err)
-		return nil, errors.New("注册失败，请稍后重试")
+		logx.Errorf("Failed to hash password: %v", err)
+		return nil, errors.New("registration failed, please try again later")
 	}
 
-	// 4. 创建用户
+	// 4. Create user
 	user := &model.User{
 		Username: req.Username,
 		Password: hashedPassword,
@@ -63,13 +63,13 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 	}
 
 	if err := l.svcCtx.UserModel.Create(user); err != nil {
-		logx.Errorf("创建用户失败: %v", err)
-		return nil, errors.New("注册失败，请稍后重试")
+		logx.Errorf("Failed to create user: %v", err)
+		return nil, errors.New("registration failed, please try again later")
 	}
 
 	return &types.RegisterResp{
 		ID:       user.ID,
 		Username: user.Username,
-		Message:  "注册成功",
+		Message:  "Registration successful",
 	}, nil
 }

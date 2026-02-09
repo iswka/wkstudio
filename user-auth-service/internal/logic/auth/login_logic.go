@@ -26,27 +26,27 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 }
 
 func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err error) {
-	// 1. 查询用户
+	// 1. Find user by username
 	user, err := l.svcCtx.UserModel.FindByUsername(req.Username)
 	if err != nil {
 		if errors.Is(err, model.ErrUserNotFound) {
-			return nil, errors.New("用户名或密码错误")
+			return nil, errors.New("invalid username or password")
 		}
-		logx.Errorf("查询用户失败: %v", err)
-		return nil, errors.New("登录失败，请稍后重试")
+		logx.Errorf("Failed to find user: %v", err)
+		return nil, errors.New("login failed, please try again later")
 	}
 
-	// 2. 检查用户状态
+	// 2. Check user status
 	if user.Status != 1 {
-		return nil, errors.New("账号已被禁用")
+		return nil, errors.New("account has been disabled")
 	}
 
-	// 3. 验证密码
+	// 3. Verify password
 	if !utils.CheckPasswordHash(req.Password, user.Password) {
-		return nil, errors.New("用户名或密码错误")
+		return nil, errors.New("invalid username or password")
 	}
 
-	// 4. 生成JWT Token
+	// 4. Generate JWT Token
 	now := utils.GetCurrentTimestamp()
 	accessExpire := l.svcCtx.Config.Auth.AccessExpire
 	accessToken, err := utils.GenerateJwtToken(
@@ -56,8 +56,8 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 		user.ID,
 	)
 	if err != nil {
-		logx.Errorf("生成Token失败: %v", err)
-		return nil, errors.New("登录失败，请稍后重试")
+		logx.Errorf("Failed to generate token: %v", err)
+		return nil, errors.New("login failed, please try again later")
 	}
 
 	return &types.LoginResp{

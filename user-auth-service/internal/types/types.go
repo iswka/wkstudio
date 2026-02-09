@@ -1,6 +1,6 @@
 package types
 
-// RegisterReq 注册请求
+// RegisterReq represents a registration request
 type RegisterReq struct {
 	Username string `json:"username" validate:"required,min=3,max=20"`
 	Password string `json:"password" validate:"required,min=6,max=20"`
@@ -8,20 +8,20 @@ type RegisterReq struct {
 	Mobile   string `json:"mobile,optional"`
 }
 
-// RegisterResp 注册响应
+// RegisterResp represents a registration response
 type RegisterResp struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
 	Message  string `json:"message"`
 }
 
-// LoginReq 登录请求
+// LoginReq represents a login request
 type LoginReq struct {
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required"`
 }
 
-// LoginResp 登录响应
+// LoginResp represents a login response
 type LoginResp struct {
 	ID          int64  `json:"id"`
 	Username    string `json:"username"`
@@ -30,12 +30,12 @@ type LoginResp struct {
 	ExpireTime  int64  `json:"expire_time"`
 }
 
-// UserInfoReq 用户信息请求
+// UserInfoReq represents a user info request
 type UserInfoReq struct {
 	UserID int64 `json:"user_id,optional"`
 }
 
-// UserInfoResp 用户信息响应
+// UserInfoResp represents a user info response
 type UserInfoResp struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
@@ -43,13 +43,13 @@ type UserInfoResp struct {
 	Mobile   string `json:"mobile"`
 }
 
-// ChangePasswordReq 修改密码请求
+// ChangePasswordReq represents a change password request
 type ChangePasswordReq struct {
 	OldPassword string `json:"old_password" validate:"required"`
 	NewPassword string `json:"new_password" validate:"required,min=6,max=20"`
 }
 
-// CommonResp 通用响应
+// CommonResp represents a common response
 type CommonResp struct {
 	Message string `json:"message"`
 }

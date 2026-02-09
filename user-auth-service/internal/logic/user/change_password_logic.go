@@ -27,10 +27,10 @@ func NewChangePasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ch
 }
 
 func (l *ChangePasswordLogic) ChangePassword(req *types.ChangePasswordReq) (resp *types.CommonResp, err error) {
-	// 从context中获取用户ID
+	// Get user ID from context
 	userIDValue := l.ctx.Value("user_id")
 	if userIDValue == nil {
-		return nil, errors.New("未授权")
+		return nil, errors.New("unauthorized")
 	}
 
 	var userID int64
@@ -42,38 +42,38 @@ func (l *ChangePasswordLogic) ChangePassword(req *types.ChangePasswordReq) (resp
 	case int64:
 		userID = v
 	default:
-		return nil, errors.New("无效的用户ID")
+		return nil, errors.New("invalid user ID")
 	}
 
-	// 查询用户
+	// Query user
 	user, err := l.svcCtx.UserModel.FindByID(userID)
 	if err != nil {
 		if errors.Is(err, model.ErrUserNotFound) {
-			return nil, errors.New("用户不存在")
+			return nil, errors.New("user not found")
 		}
-		logx.Errorf("查询用户失败: %v", err)
-		return nil, errors.New("修改密码失败")
+		logx.Errorf("Failed to find user: %v", err)
+		return nil, errors.New("failed to change password")
 	}
 
-	// 验证旧密码
+	// Verify old password
 	if !utils.CheckPasswordHash(req.OldPassword, user.Password) {
-		return nil, errors.New("原密码错误")
+		return nil, errors.New("incorrect old password")
 	}
 
-	// 加密新密码
+	// Hash new password
 	hashedPassword, err := utils.HashPassword(req.NewPassword)
 	if err != nil {
-		logx.Errorf("密码加密失败: %v", err)
-		return nil, errors.New("修改密码失败")
+		logx.Errorf("Failed to hash password: %v", err)
+		return nil, errors.New("failed to change password")
 	}
 
-	// 更新密码
+	// Update password
 	if err := l.svcCtx.UserModel.UpdatePassword(userID, hashedPassword); err != nil {
-		logx.Errorf("更新密码失败: %v", err)
-		return nil, errors.New("修改密码失败")
+		logx.Errorf("Failed to update password: %v", err)
+		return nil, errors.New("failed to change password")
 	}
 
 	return &types.CommonResp{
-		Message: "密码修改成功",
+		Message: "Password changed successfully",
 	}, nil
 }
