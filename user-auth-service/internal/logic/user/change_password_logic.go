@@ -1,8 +1,8 @@
 package user
 
 import (
+	commonutils "common-utils"
 	"context"
-	"encoding/json"
 	"errors"
 	"user-auth-service/internal/model"
 	"user-auth-service/internal/svc"
@@ -28,21 +28,9 @@ func NewChangePasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Ch
 
 func (l *ChangePasswordLogic) ChangePassword(req *types.ChangePasswordReq) (resp *types.CommonResp, err error) {
 	// Get user ID from context
-	userIDValue := l.ctx.Value("user_id")
-	if userIDValue == nil {
-		return nil, errors.New("unauthorized")
-	}
-
-	var userID int64
-	switch v := userIDValue.(type) {
-	case float64:
-		userID = int64(v)
-	case json.Number:
-		userID, _ = v.Int64()
-	case int64:
-		userID = v
-	default:
-		return nil, errors.New("invalid user ID")
+	userID, err := commonutils.GetUserIDFromContext(l.ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	// Query user

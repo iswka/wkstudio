@@ -3,10 +3,14 @@ module password-manage-service
 go 1.21
 
 require (
+	common-utils v0.0.0
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/zeromicro/go-zero v1.6.0
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/gorm v1.25.7-0.20240204074919-46816ad31dde
 )
+
+replace common-utils => ../common-utils
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect

@@ -1,8 +1,8 @@
 package password
 
 import (
+	commonutils "common-utils"
 	"context"
-	"encoding/json"
 	"errors"
 	"password-manage-service/internal/model"
 	"password-manage-service/internal/svc"
@@ -29,21 +29,9 @@ func NewGetPasswordDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 
 func (l *GetPasswordDetailLogic) GetPasswordDetail(req *types.GetPasswordDetailReq) (resp *types.GetPasswordDetailResp, err error) {
 	// Get user ID from context
-	userIDValue := l.ctx.Value("user_id")
-	if userIDValue == nil {
-		return nil, errors.New("unauthorized")
-	}
-
-	var userID int64
-	switch v := userIDValue.(type) {
-	case float64:
-		userID = int64(v)
-	case json.Number:
-		userID, _ = v.Int64()
-	case int64:
-		userID = v
-	default:
-		return nil, errors.New("invalid user ID")
+	userID, err := commonutils.GetUserIDFromContext(l.ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	// Query password record
