@@ -1,0 +1,111 @@
+syntax = "v1"
+
+info(
+    title: "Website Collection Service"
+    desc: "Website collection CRUD operations"
+    author: "wkstudio"
+    version: "v1.0"
+)
+
+// Create website request
+type CreateWebsiteReq {
+    Title       string `json:"title" validate:"required,max=200"`
+    Icon        string `json:"icon,optional"`
+    Description string `json:"description,optional"`
+    URL         string `json:"url" validate:"required,url"`
+}
+
+// Create website response
+type CreateWebsiteResp {
+    ID      int64  `json:"id"`
+    Title   string `json:"title"`
+    Message string `json:"message"`
+}
+
+// Get website list request
+type GetWebsiteListReq {
+    Page     int64 `json:"page,optional,default=1"`
+    PageSize int64 `json:"page_size,optional,default=20"`
+}
+
+// Website item
+type WebsiteItem {
+    ID          int64  `json:"id"`
+    Title       string `json:"title"`
+    Icon        string `json:"icon"`
+    Description string `json:"description"`
+    URL         string `json:"url"`
+    CreatedAt   string `json:"created_at"`
+    UpdatedAt   string `json:"updated_at"`
+}
+
+// Get website list response
+type GetWebsiteListResp {
+    List     []WebsiteItem `json:"list"`
+    Total    int64         `json:"total"`
+    Page     int64         `json:"page"`
+    PageSize int64         `json:"page_size"`
+}
+
+// Get website detail request
+type GetWebsiteDetailReq {
+    ID int64 `json:"id" validate:"required"`
+}
+
+// Get website detail response
+type GetWebsiteDetailResp {
+    ID          int64  `json:"id"`
+    Title       string `json:"title"`
+    Icon        string `json:"icon"`
+    Description string `json:"description"`
+    URL         string `json:"url"`
+    CreatedAt   string `json:"created_at"`
+    UpdatedAt   string `json:"updated_at"`
+}
+
+// Update website request
+type UpdateWebsiteReq {
+    ID          int64  `json:"id" validate:"required"`
+    Title       string `json:"title" validate:"required,max=200"`
+    Icon        string `json:"icon,optional"`
+    Description string `json:"description,optional"`
+    URL         string `json:"url" validate:"required,url"`
+}
+
+// Common response
+type CommonResp {
+    Message string `json:"message"`
+}
+
+// Delete website request
+type DeleteWebsiteReq {
+    ID int64 `json:"id" validate:"required"`
+}
+
+// All endpoints require JWT authentication
+@server(
+    jwt: Auth
+    group: website
+    middleware: AuthMiddleware
+)
+service website-service {
+    @doc "Create website record"
+    @handler createWebsite
+    post /api/website/create (CreateWebsiteReq) returns (CreateWebsiteResp)
+    
+    @doc "Get website list"
+    @handler getWebsiteList
+    get /api/website/list (GetWebsiteListReq) returns (GetWebsiteListResp)
+    
+    @doc "Get website detail"
+    @handler getWebsiteDetail
+    get /api/website/detail (GetWebsiteDetailReq) returns (GetWebsiteDetailResp)
+    
+    @doc "Update website record"
+    @handler updateWebsite
+    post /api/website/update (UpdateWebsiteReq) returns (CommonResp)
+    
+    @doc "Delete website record"
+    @handler deleteWebsite
+    post /api/website/delete (DeleteWebsiteReq) returns (CommonResp)
+}
