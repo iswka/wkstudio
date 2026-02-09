@@ -33,6 +33,12 @@ func (l *CreatePasswordLogic) CreatePassword(req *types.CreatePasswordReq) (resp
 		return nil, err
 	}
 
+	// Check if password already exists
+	password, _ := l.svcCtx.PasswordModel.FindByTitleAndUserID(req.Title, userID)
+	if password != nil {
+		return nil, errors.New("password already exists")
+	}
+
 	// Encrypt password (using JWT secret as encryption key)
 	encryptedPassword, err := utils.EncryptPassword(req.Password, l.svcCtx.Config.Auth.AccessSecret)
 	if err != nil {

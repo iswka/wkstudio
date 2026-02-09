@@ -23,6 +23,19 @@ func (m *PasswordModel) Create(password *Password) error {
 	return m.db.Create(password).Error
 }
 
+// FindByTitleAndUserID finds a password record by title and user ID
+func (m *PasswordModel) FindByTitleAndUserID(title string, userID int64) (*Password, error) {
+	var password Password
+	err := m.db.Where("title = ? AND user_id = ?", title, userID).First(&password).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrPasswordNotFound
+		}
+		return nil, err
+	}
+	return &password, nil
+}
+
 // FindByID finds a password record by ID
 func (m *PasswordModel) FindByID(id int64) (*Password, error) {
 	var password Password

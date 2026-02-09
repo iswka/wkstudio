@@ -32,6 +32,12 @@ func (l *CreateWebsiteLogic) CreateWebsite(req *types.CreateWebsiteReq) (resp *t
 		return nil, err
 	}
 
+	// Check if website already exists
+	website, _ := l.svcCtx.WebsiteModel.FindByTitleAndUserID(req.Title, userID)
+	if website != nil {
+		return nil, errors.New("website already exists")
+	}
+
 	// Create website record
 	websiteRecord := &model.Website{
 		Title:       req.Title,

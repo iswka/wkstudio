@@ -23,6 +23,18 @@ func (m *WebsiteModel) Create(website *Website) error {
 	return m.db.Create(website).Error
 }
 
+func (m *WebsiteModel) FindByTitleAndUserID(title string, userID int64) (*Website, error) {
+	var website Website
+	err := m.db.Where("title = ? AND user_id = ?", title, userID).First(&website).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrWebsiteNotFound
+		}
+		return nil, err
+	}
+	return &website, nil
+}
+
 // FindByID finds a website record by ID
 func (m *WebsiteModel) FindByID(id int64) (*Website, error) {
 	var website Website
