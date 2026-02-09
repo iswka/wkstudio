@@ -26,10 +26,10 @@ func NewGetPasswordListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *G
 }
 
 func (l *GetPasswordListLogic) GetPasswordList(req *types.GetPasswordListReq) (resp *types.GetPasswordListResp, err error) {
-	// 从context中获取用户ID
+	// Get user ID from context
 	userIDValue := l.ctx.Value("user_id")
 	if userIDValue == nil {
-		return nil, errors.New("未授权")
+		return nil, errors.New("unauthorized")
 	}
 
 	var userID int64
@@ -41,10 +41,10 @@ func (l *GetPasswordListLogic) GetPasswordList(req *types.GetPasswordListReq) (r
 	case int64:
 		userID = v
 	default:
-		return nil, errors.New("无效的用户ID")
+		return nil, errors.New("invalid user ID")
 	}
 
-	// 设置默认值
+	// Set default values
 	if req.Page <= 0 {
 		req.Page = 1
 	}
@@ -52,14 +52,14 @@ func (l *GetPasswordListLogic) GetPasswordList(req *types.GetPasswordListReq) (r
 		req.PageSize = 20
 	}
 
-	// 查询密码列表
+	// Query password list
 	passwords, err := l.svcCtx.PasswordModel.FindByUserID(userID)
 	if err != nil {
-		logx.Errorf("查询密码列表失败: %v", err)
-		return nil, errors.New("获取密码列表失败")
+		logx.Errorf("Failed to query password list: %v", err)
+		return nil, errors.New("failed to get password list")
 	}
 
-	// 转换为响应格式
+	// Convert to response format
 	var list []types.PasswordItem
 	for _, p := range passwords {
 		list = append(list, types.PasswordItem{
@@ -71,7 +71,7 @@ func (l *GetPasswordListLogic) GetPasswordList(req *types.GetPasswordListReq) (r
 		})
 	}
 
-	// 简单的分页处理（实际应该数据库层面分页）
+	// Simple pagination handling (should be done at database level in production)
 	total := int64(len(list))
 	start := (req.Page - 1) * req.PageSize
 	end := start + req.PageSize

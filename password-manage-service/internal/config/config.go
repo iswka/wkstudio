@@ -5,12 +5,12 @@ import "github.com/zeromicro/go-zero/rest"
 type Config struct {
 	rest.RestConf
 
-	// JWT 认证配置
+	// JWT authentication configuration
 	Auth struct {
 		AccessSecret string
 		AccessExpire int64
 	}
 
-	// 数据库配置
+	// Database configuration
 	DataSource string
 }

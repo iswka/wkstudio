@@ -27,10 +27,10 @@ func NewCreatePasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Cr
 }
 
 func (l *CreatePasswordLogic) CreatePassword(req *types.CreatePasswordReq) (resp *types.CreatePasswordResp, err error) {
-	// 从context中获取用户ID
+	// Get user ID from context
 	userIDValue := l.ctx.Value("user_id")
 	if userIDValue == nil {
-		return nil, errors.New("未授权")
+		return nil, errors.New("unauthorized")
 	}
 
 	var userID int64
@@ -42,17 +42,17 @@ func (l *CreatePasswordLogic) CreatePassword(req *types.CreatePasswordReq) (resp
 	case int64:
 		userID = v
 	default:
-		return nil, errors.New("无效的用户ID")
+		return nil, errors.New("invalid user ID")
 	}
 
-	// 加密密码（使用JWT密钥作为加密密钥）
+	// Encrypt password (using JWT secret as encryption key)
 	encryptedPassword, err := utils.EncryptPassword(req.Password, l.svcCtx.Config.Auth.AccessSecret)
 	if err != nil {
-		logx.Errorf("密码加密失败: %v", err)
-		return nil, errors.New("创建密码记录失败")
+		logx.Errorf("Failed to encrypt password: %v", err)
+		return nil, errors.New("failed to create password record")
 	}
 
-	// 创建密码记录
+	// Create password record
 	passwordRecord := &model.Password{
 		Title:       req.Title,
 		Description: req.Description,
@@ -61,13 +61,13 @@ func (l *CreatePasswordLogic) CreatePassword(req *types.CreatePasswordReq) (resp
 	}
 
 	if err := l.svcCtx.PasswordModel.Create(passwordRecord); err != nil {
-		logx.Errorf("创建密码记录失败: %v", err)
-		return nil, errors.New("创建密码记录失败")
+		logx.Errorf("Failed to create password record: %v", err)
+		return nil, errors.New("failed to create password record")
 	}
 
 	return &types.CreatePasswordResp{
 		ID:      passwordRecord.ID,
 		Title:   passwordRecord.Title,
-		Message: "创建成功",
+		Message: "Password created successfully",
 	}, nil
 }

@@ -18,15 +18,15 @@ type ServiceContext struct {
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
-	// 初始化数据库连接
+	// Initialize database connection
 	db, err := gorm.Open(postgres.Open(c.DataSource), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("无法连接数据库: %v", err)
+		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	// 自动迁移数据表
+	// Auto migrate database tables
 	if err := db.AutoMigrate(&model.Password{}); err != nil {
-		log.Fatalf("数据表迁移失败: %v", err)
+		log.Fatalf("Failed to migrate database tables: %v", err)
 	}
 
 	return &ServiceContext{

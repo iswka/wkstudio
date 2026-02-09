@@ -1,26 +1,26 @@
 package types
 
-// CreatePasswordReq 创建密码请求
+// CreatePasswordReq represents a create password request
 type CreatePasswordReq struct {
 	Title       string `json:"title" validate:"required,max=200"`
 	Description string `json:"description,optional"`
 	Password    string `json:"password" validate:"required"`
 }
 
-// CreatePasswordResp 创建密码响应
+// CreatePasswordResp represents a create password response
 type CreatePasswordResp struct {
 	ID      int64  `json:"id"`
 	Title   string `json:"title"`
 	Message string `json:"message"`
 }
 
-// GetPasswordListReq 获取密码列表请求
+// GetPasswordListReq represents a get password list request
 type GetPasswordListReq struct {
 	Page     int64 `json:"page,optional,default=1"`
 	PageSize int64 `json:"page_size,optional,default=20"`
 }
 
-// PasswordItem 密码项
+// PasswordItem represents a password item
 type PasswordItem struct {
 	ID          int64  `json:"id"`
 	Title       string `json:"title"`
@@ -29,7 +29,7 @@ type PasswordItem struct {
 	UpdatedAt   string `json:"updated_at"`
 }
 
-// GetPasswordListResp 获取密码列表响应
+// GetPasswordListResp represents a get password list response
 type GetPasswordListResp struct {
 	List     []PasswordItem `json:"list"`
 	Total    int64          `json:"total"`
@@ -37,12 +37,12 @@ type GetPasswordListResp struct {
 	PageSize int64          `json:"page_size"`
 }
 
-// GetPasswordDetailReq 获取密码详情请求
+// GetPasswordDetailReq represents a get password detail request
 type GetPasswordDetailReq struct {
 	ID int64 `json:"id" validate:"required"`
 }
 
-// GetPasswordDetailResp 获取密码详情响应
+// GetPasswordDetailResp represents a get password detail response
 type GetPasswordDetailResp struct {
 	ID          int64  `json:"id"`
 	Title       string `json:"title"`
@@ -52,7 +52,7 @@ type GetPasswordDetailResp struct {
 	UpdatedAt   string `json:"updated_at"`
 }
 
-// UpdatePasswordReq 更新密码请求
+// UpdatePasswordReq represents an update password request
 type UpdatePasswordReq struct {
 	ID          int64  `json:"id" validate:"required"`
 	Title       string `json:"title" validate:"required,max=200"`
@@ -60,12 +60,12 @@ type UpdatePasswordReq struct {
 	Password    string `json:"password" validate:"required"`
 }
 
-// CommonResp 通用响应
+// CommonResp represents a common response
 type CommonResp struct {
 	Message string `json:"message"`
 }
 
-// DeletePasswordReq 删除密码请求
+// DeletePasswordReq represents a delete password request
 type DeletePasswordReq struct {
 	ID int64 `json:"id" validate:"required"`
 }

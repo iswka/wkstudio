@@ -26,10 +26,10 @@ func NewDeletePasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext) *De
 }
 
 func (l *DeletePasswordLogic) DeletePassword(req *types.DeletePasswordReq) (resp *types.CommonResp, err error) {
-	// 从context中获取用户ID
+	// Get user ID from context
 	userIDValue := l.ctx.Value("user_id")
 	if userIDValue == nil {
-		return nil, errors.New("未授权")
+		return nil, errors.New("unauthorized")
 	}
 
 	var userID int64
@@ -41,19 +41,19 @@ func (l *DeletePasswordLogic) DeletePassword(req *types.DeletePasswordReq) (resp
 	case int64:
 		userID = v
 	default:
-		return nil, errors.New("无效的用户ID")
+		return nil, errors.New("invalid user ID")
 	}
 
-	// 删除密码记录（会检查所有权）
+	// Delete password record (ownership will be checked)
 	if err := l.svcCtx.PasswordModel.Delete(req.ID, userID); err != nil {
 		if errors.Is(err, model.ErrPasswordNotFound) {
-			return nil, errors.New("密码记录不存在")
+			return nil, errors.New("password record not found")
 		}
-		logx.Errorf("删除密码记录失败: %v", err)
-		return nil, errors.New("删除密码记录失败")
+		logx.Errorf("Failed to delete password record: %v", err)
+		return nil, errors.New("failed to delete password record")
 	}
 
 	return &types.CommonResp{
-		Message: "删除成功",
+		Message: "Password deleted successfully",
 	}, nil
 }

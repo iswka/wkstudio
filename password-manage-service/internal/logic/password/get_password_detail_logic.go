@@ -28,10 +28,10 @@ func NewGetPasswordDetailLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 }
 
 func (l *GetPasswordDetailLogic) GetPasswordDetail(req *types.GetPasswordDetailReq) (resp *types.GetPasswordDetailResp, err error) {
-	// 从context中获取用户ID
+	// Get user ID from context
 	userIDValue := l.ctx.Value("user_id")
 	if userIDValue == nil {
-		return nil, errors.New("未授权")
+		return nil, errors.New("unauthorized")
 	}
 
 	var userID int64
@@ -43,29 +43,29 @@ func (l *GetPasswordDetailLogic) GetPasswordDetail(req *types.GetPasswordDetailR
 	case int64:
 		userID = v
 	default:
-		return nil, errors.New("无效的用户ID")
+		return nil, errors.New("invalid user ID")
 	}
 
-	// 查询密码记录
+	// Query password record
 	passwordRecord, err := l.svcCtx.PasswordModel.FindByID(req.ID)
 	if err != nil {
 		if errors.Is(err, model.ErrPasswordNotFound) {
-			return nil, errors.New("密码记录不存在")
+			return nil, errors.New("password record not found")
 		}
-		logx.Errorf("查询密码记录失败: %v", err)
-		return nil, errors.New("获取密码详情失败")
+		logx.Errorf("Failed to query password record: %v", err)
+		return nil, errors.New("failed to get password detail")
 	}
 
-	// 检查所有权
+	// Check ownership
 	if passwordRecord.UserID != userID {
-		return nil, errors.New("无权访问")
+		return nil, errors.New("access denied")
 	}
 
-	// 解密密码
+	// Decrypt password
 	decryptedPassword, err := utils.DecryptPassword(passwordRecord.Password, l.svcCtx.Config.Auth.AccessSecret)
 	if err != nil {
-		logx.Errorf("密码解密失败: %v", err)
-		return nil, errors.New("获取密码详情失败")
+		logx.Errorf("Failed to decrypt password: %v", err)
+		return nil, errors.New("failed to get password detail")
 	}
 
 	return &types.GetPasswordDetailResp{

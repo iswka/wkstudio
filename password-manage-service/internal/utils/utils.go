@@ -9,13 +9,13 @@ import (
 	"io"
 )
 
-// EncryptPassword 加密密码（使用AES-256-GCM）
+// EncryptPassword encrypts a password using AES-256-GCM
 func EncryptPassword(plaintext, key string) (string, error) {
-	// 将key转换为32字节（AES-256需要32字节密钥）
+	// Convert key to 32 bytes (AES-256 requires 32-byte key)
 	keyBytes := make([]byte, 32)
 	copy(keyBytes, []byte(key))
 	if len(key) < 32 {
-		// 如果key太短，重复填充
+		// If key is too short, pad by repeating
 		for i := len(key); i < 32; i++ {
 			keyBytes[i] = keyBytes[i%len(key)]
 		}
@@ -40,9 +40,9 @@ func EncryptPassword(plaintext, key string) (string, error) {
 	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 
-// DecryptPassword 解密密码
+// DecryptPassword decrypts a password
 func DecryptPassword(ciphertext, key string) (string, error) {
-	// 将key转换为32字节
+	// Convert key to 32 bytes
 	keyBytes := make([]byte, 32)
 	copy(keyBytes, []byte(key))
 	if len(key) < 32 {

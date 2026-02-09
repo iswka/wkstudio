@@ -27,10 +27,10 @@ func NewUpdatePasswordLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Up
 }
 
 func (l *UpdatePasswordLogic) UpdatePassword(req *types.UpdatePasswordReq) (resp *types.CommonResp, err error) {
-	// 从context中获取用户ID
+	// Get user ID from context
 	userIDValue := l.ctx.Value("user_id")
 	if userIDValue == nil {
-		return nil, errors.New("未授权")
+		return nil, errors.New("unauthorized")
 	}
 
 	var userID int64
@@ -42,42 +42,42 @@ func (l *UpdatePasswordLogic) UpdatePassword(req *types.UpdatePasswordReq) (resp
 	case int64:
 		userID = v
 	default:
-		return nil, errors.New("无效的用户ID")
+		return nil, errors.New("invalid user ID")
 	}
 
-	// 查询密码记录
+	// Query password record
 	passwordRecord, err := l.svcCtx.PasswordModel.FindByID(req.ID)
 	if err != nil {
 		if errors.Is(err, model.ErrPasswordNotFound) {
-			return nil, errors.New("密码记录不存在")
+			return nil, errors.New("password record not found")
 		}
-		logx.Errorf("查询密码记录失败: %v", err)
-		return nil, errors.New("更新密码记录失败")
+		logx.Errorf("Failed to query password record: %v", err)
+		return nil, errors.New("failed to update password record")
 	}
 
-	// 检查所有权
+	// Check ownership
 	if passwordRecord.UserID != userID {
-		return nil, errors.New("无权访问")
+		return nil, errors.New("access denied")
 	}
 
-	// 加密新密码
+	// Encrypt new password
 	encryptedPassword, err := utils.EncryptPassword(req.Password, l.svcCtx.Config.Auth.AccessSecret)
 	if err != nil {
-		logx.Errorf("密码加密失败: %v", err)
-		return nil, errors.New("更新密码记录失败")
+		logx.Errorf("Failed to encrypt password: %v", err)
+		return nil, errors.New("failed to update password record")
 	}
 
-	// 更新密码记录
+	// Update password record
 	passwordRecord.Title = req.Title
 	passwordRecord.Description = req.Description
 	passwordRecord.Password = encryptedPassword
 
 	if err := l.svcCtx.PasswordModel.Update(passwordRecord); err != nil {
-		logx.Errorf("更新密码记录失败: %v", err)
-		return nil, errors.New("更新密码记录失败")
+		logx.Errorf("Failed to update password record: %v", err)
+		return nil, errors.New("failed to update password record")
 	}
 
 	return &types.CommonResp{
-		Message: "更新成功",
+		Message: "Password updated successfully",
 	}, nil
 }
